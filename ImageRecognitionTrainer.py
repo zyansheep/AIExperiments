@@ -39,8 +39,10 @@ x_train = np.flip(x_train, 2)
 x_test = np.rot90(x_test, 1, (2,1))
 x_test = np.flip(x_test, 2)
 
-'''for i in range(len(x_train)):
-    x_train[i] = center(x_train[i])'''
+for i in range(len(x_train)):
+    x_train[i] = center(x_train[i])
+for i in range(len(x_test)):
+    x_test[i] = center(x_test[i])
 
 print("Done Preprocessing")
 

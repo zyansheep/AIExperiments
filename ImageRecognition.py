@@ -18,7 +18,7 @@ font = pygame.font.SysFont("Ubuntu", 20);
 board = [[0 for i in range(28)] for j in range(28)];
 
 # load json and weight files to import trained model
-modelName = "model_characters"
+modelName = "model"
 json_file = open("models/"+modelName+'.json', 'r')
 model = tf.keras.models.model_from_json(json_file.read())
 json_file.close()
@@ -52,6 +52,14 @@ def dispText(text, font, x, y, color):
     TextRect.x = x; TextRect.y = y;
     screen.blit(TextSurf, TextRect)
 
+def getNetGuess(arr):
+    centered = center(np.array(arr))
+    x = centered[np.newaxis, ...]  # add 3rd dim (needed for predict func)
+    y = model.predict(x)
+    results = np.flip(np.argsort(y))
+    netGuess[0] = results
+    netGuess[1] = np.flip(np.sort(np.round(y * 100)))
+
 isRunning = True
 while isRunning:
     clock.tick(60) #Make sure pygame doesn't use all the resources
@@ -60,14 +68,9 @@ while isRunning:
         if event.type == pygame.QUIT: isRunning = False;
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == pygame.BUTTON_LEFT:
-                centered = center(np.array(board))
-                x = centered[np.newaxis, ...] #add 3rd dim (needed for predict func)
-                y = model.predict(x)
-                results = np.flip(np.argsort(y))
-                netGuess[0] = results
-                netGuess[1] = np.flip(np.sort(np.round(y*100)))
-
-                print(netGuess)
+                getNetGuess(board)
+            if event.button == pygame.BUTTON_RIGHT:
+                getNetGuess(board)
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_c:
                 board = center(np.array(board)).tolist();
