@@ -55,10 +55,17 @@ def dispText(text, font, x, y, color):
 def getNetGuess(arr):
     centered = center(np.array(arr))
     x = centered[np.newaxis, ...]  # add 3rd dim (needed for predict func)
+    print(x.shape)
+    x = np.expand_dims(x, axis=4)
+    print(x.shape)
     y = model.predict(x)
-    results = np.flip(np.argsort(y))
+    y=y[0]
+    print(y.shape)
+    print(y)
+    results = np.flip(np.argsort(y), axis=0)
     netGuess[0] = results
-    netGuess[1] = np.flip(np.sort(np.round(y * 100)))
+    netGuess[1] = np.flip(np.sort(np.round(y * 100)), axis=0)
+
 
 isRunning = True
 while isRunning:

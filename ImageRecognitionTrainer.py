@@ -4,6 +4,7 @@ mnist = tf.keras.datasets.mnist
 from mlxtend.data import loadlocal_mnist
 import matplotlib.pyplot as plt
 
+'''
 def shift(a, dx, dy):
     r = np.roll(a, int(dy), axis=0)
     r = np.roll(r, int(dx), axis=1)
@@ -44,7 +45,23 @@ for i in range(len(x_train)):
 for i in range(len(x_test)):
     x_test[i] = center(x_test[i])
 
+np.save('Training/Emnist/ByClass/train_x', x_train)
+np.save('Training/Emnist/ByClass/train_y', y_train)
+np.save('Training/Emnist/ByClass/test_x', x_test)
+np.save('Training/Emnist/ByClass/test_y', y_test)
+
 print("Done Preprocessing")
+exit(0)'''
+
+x_train = np.load('Training/Emnist/ByClass/train_x.npy')
+y_train = np.load('Training/Emnist/ByClass/train_y.npy')
+x_test = np.load('Training/Emnist/ByClass/test_x.npy')
+y_test = np.load('Training/Emnist/ByClass/test_y.npy')
+
+x_train = np.expand_dims(x_train, axis=4)
+x_test = np.expand_dims(x_test, axis=4)
+
+print(x_train.shape)
 
 '''print(x_train.shape)
 for i in range(100):
@@ -52,16 +69,17 @@ for i in range(100):
     plt.imshow(x_train[i], cmap="gray")
     plt.savefig("imgs/img"+str(y_train[i])+".png")'''
 
+#Convolutional Neural Network
 model = tf.keras.models.Sequential([
-    tf.keras.layers.Flatten(input_shape=(28, 28)),
-    tf.keras.layers.Dense(512, activation=tf.nn.relu),
-    tf.keras.layers.Dropout(0.05),
-    tf.keras.layers.Dense(256, activation=tf.nn.relu),
-    tf.keras.layers.Dropout(0.1),
+    tf.keras.layers.Conv2D(32, (3, 3), activation=tf.nn.relu, input_shape=(28, 28, 1)),
+    tf.keras.layers.Conv2D(64, (3, 3), activation=tf.nn.relu),
+    tf.keras.layers.MaxPool2D(pool_size=(2, 2)),
+    tf.keras.layers.Flatten(),
     tf.keras.layers.Dense(128, activation=tf.nn.relu),
-    tf.keras.layers.Dropout(0.2),
+    tf.keras.layers.Dropout(0.3),
     tf.keras.layers.Dense(62, activation=tf.nn.softmax)
 ])
+model.summary()
 #Model Stucture
 model.compile(optimizer='adam',
               loss='sparse_categorical_crossentropy',
@@ -74,7 +92,7 @@ model.evaluate(x_test, y_test)
 
 filename = "model"
 model_json = model.to_json()
-with open("models/"+filename+"model.json", "w") as json_file:
+with open("models/"+filename+".json", "w") as json_file:
     json_file.write(model_json)
 # serialize weights to HDF5
 model.save_weights("models/"+filename+".h5")
