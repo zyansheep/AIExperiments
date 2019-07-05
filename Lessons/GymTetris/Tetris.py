@@ -18,6 +18,8 @@ state_size = (240, 256, 3)
 
 agent = Agent(state_size, num_actions)
 
+episodeRenderInterval = 10;
+
 episode = 0
 running = True
 isTrained = False
@@ -28,7 +30,8 @@ while running:
     done = False
     frames = 0
     while not done:
-        env.render()
+        if(episode % episodeRenderInterval == 0):
+            env.render()
 
         action = agent.act(state)
         next_state, reward, done, _ = env.step(action)
@@ -36,4 +39,4 @@ while running:
         state = next_state #update state
 
     agent.replay(32)
-    print("Episode: " + str(episode) + ", Average reward / 100 eps: " + str(np.mean(total_episode_rewards[-100:])))
+    print("Episode: " + str(episode))

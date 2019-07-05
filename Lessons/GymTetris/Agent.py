@@ -22,9 +22,9 @@ class Agent:
 
         #Keras Model
         self.model = tf.keras.Sequential([
-            tf.keras.layers.Flatten(input_shape=input_shape),
-            tf.keras.layers.Dense(25, activation='relu'),
-            tf.keras.layers.Dense(25, activation='relu'),
+            tf.keras.layers.Flatten(batch_input_shape=input_shape),
+            tf.keras.layers.Dense(128, activation='relu'),
+            tf.keras.layers.Dense(64, activation='relu'),
             tf.keras.layers.Dense(output_shape, activation='linear'),  # output layer
         ])
 
