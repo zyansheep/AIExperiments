@@ -18,7 +18,7 @@ font = pygame.font.SysFont("Ubuntu", 20);
 board = [[0 for i in range(28)] for j in range(28)];
 
 # load json and weight files to import trained model
-modelName = "model"
+modelName = "model_characters"
 json_file = open("models/"+modelName+'.json', 'r')
 model = tf.keras.models.model_from_json(json_file.read())
 json_file.close()
@@ -56,7 +56,7 @@ def getNetGuess(arr):
     centered = center(np.array(arr))
     x = centered[np.newaxis, ...]  # add 3rd dim (needed for predict func)
     print(x.shape)
-    x = np.expand_dims(x, axis=4)
+    #x = np.expand_dims(x, axis=4)
     print(x.shape)
     y = model.predict(x)
     y=y[0]
