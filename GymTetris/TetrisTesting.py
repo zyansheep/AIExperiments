@@ -1,14 +1,14 @@
 import numpy as np
 import tensorflow as tf
 import time
+import matplotlib.pyplot as plt
 
 from nes_py.wrappers import JoypadSpace
 import gym_tetris
 import gym
 from gym_tetris.actions import SIMPLE_MOVEMENT
-from Agent import Agent
 
-env = gym_tetris.make("TetrisA-v0")
+env = gym_tetris.make("TetrisA-v2")
 env = JoypadSpace(env, SIMPLE_MOVEMENT)
 
 #action size is NES simple input for tetris
@@ -16,9 +16,10 @@ env = JoypadSpace(env, SIMPLE_MOVEMENT)
 num_actions = len(SIMPLE_MOVEMENT)
 state_size = (240, 256, 3)
 
-agent = Agent(state_size, num_actions)
-
-episodeRenderInterval = 10;
+episode = 0
+running = True
+isTrained = False
+state = env.reset()
 
 def getBoard(state):
     state = state[48:208, 96:176] #Get tetris board only (not whole screen)
@@ -32,49 +33,60 @@ def getBoard(state):
             ind2 = (int)((item-4)/8);
             board[ind1, ind2] = state[line, item]
     
-    return board
+    board = (board != 0.0)
+    return board.astype(int)
 
 #Receives piece string
 pieceDict = {'L': 0, 'T': 0, 'Z': 0, 'O': 0, 'S': 0, 'J': 0, 'I': 0}
 def getPiece(piece):
     piece = piece[0] #first character is piece signifier
-    dict = pieceDict
+    dict = pieceDict.copy()
     dict[piece] = 1;
-    return dict.values()
+    return list(dict.values())
 
 def getState(board, curPiece, nextPiece):
     state = getPiece(curPiece)
     state.extend(getPiece(nextPiece))
-    state.extend(np.flatten(board))
+    state.extend(board.flatten())
+    return state
 
-episode = 0
-running = True
-isTrained = False
+skip = 1
+
 while running:
     episode += 1
-    state = env.reset()
     #do training
     done = False
+    skip = 0
     frames = 0
-    lastPiece = 0;
+    
+    rawstate, reward, done, info = env.step(5)
+    
     while not done:
-        lastState = state
-        if(episode % episodeRenderInterval == 0):
-            env.render()
         
-        action = agent.act(lastState) #Act on last state
+        if skip < 0:
+            userInput = input("Next?");
+            inputArr = userInput.split(' ')
+            if userInput == "stop": running = False
+            if userInput == "reset": state = env.reset()
+            if inputArr[0] == "skip": skip += int(inputArr[1])
+        else: skip -= 1;
         
+        action = 5
         rawstate, reward, done, info = env.step(action)
-        nextPiece = info["next_piece"]
-        while info["current_piece"] != nextPiece:
-            env.step(5) #Move down
-        
         board = getBoard(rawstate)
         state = getState(board, info["current_piece"], info["next_piece"])
         
-        agent.remember(state, action, reward, state, done)
-         #update state
-        lastPiece = info.current_piece
-
-    agent.replay(32)
+        print(info)
+        print(state)
+        
+        #network training here
+        
+        prev_state = state #update state
+        
+        '''plt.imshow(state)
+        plt.show()'''
+        
+        env.render()
+    
+    pieceCount = info["statistics"].values(); #Update piececount
     print("Episode: " + str(episode))

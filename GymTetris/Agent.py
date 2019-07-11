@@ -5,9 +5,8 @@ from collections import deque
 
 class Agent:
     memory = []
-
-
-    def __init__(self, input_shape, output_shape):
+    
+    def __init__(self, input_shape, output_shape, filename=""):
         self.input_shape = input_shape
         self.output_shape = output_shape
         print(input_shape)
@@ -19,17 +18,20 @@ class Agent:
         self.exploreMin = 0.01
         self.exploreDecay = 0.995
         self.learnRate = 0.001
+        
+        if filename != "":
+            #Keras Model
+            self.model = tf.keras.Sequential([
+                tf.keras.layers.Flatten(batch_input_shape=input_shape),
+                tf.keras.layers.Dense(128, activation='relu'),
+                tf.keras.layers.Dense(64, activation='relu'),
+                tf.keras.layers.Dense(output_shape, activation='linear'),  # output layer
+            ])
 
-        #Keras Model
-        self.model = tf.keras.Sequential([
-            tf.keras.layers.Flatten(batch_input_shape=input_shape),
-            tf.keras.layers.Dense(128, activation='relu'),
-            tf.keras.layers.Dense(64, activation='relu'),
-            tf.keras.layers.Dense(output_shape, activation='linear'),  # output layer
-        ])
-
-        self.model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(lr=self.learnRate));
-        self.model.summary();
+            self.model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(lr=self.learnRate))
+            self.model.summary()
+        else:
+            self.load(filename)
 
     #Collect states (training data)
     def remember(self, state, action, reward, next_state, done):
@@ -57,3 +59,18 @@ class Agent:
             self.model.fit(state, target_f, epochs=1, verbose=0)
         if self.exploreRate > self.exploreMin:
             self.exploreRate *= self.exploreDecay
+    
+    def save(filename):
+        model_json = model.to_json()
+        with open("models/"+filename+".json", "w") as json_file:
+            json_file.write(model_json)
+        # serialize weights to HDF5
+        model.save_weights("models/"+filename+".h5")
+    
+    def load(filename):
+        json_file = open("models/"+filename+'.json', 'r')
+        model = tf.keras.models.model_from_json(json_file.read())
+        json_file.close()
+        model.load_weights("models/"+filename+".h5")
+        print("Loaded model from disk")
+    
