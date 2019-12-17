@@ -19,12 +19,13 @@ class Agent:
         self.exploreDecay = 0.995
         self.learnRate = 0.001
         
-        if filename != "":
+        if not filename:
             #Keras Model
             self.model = tf.keras.Sequential([
-                tf.keras.layers.Flatten(batch_input_shape=input_shape),
-                tf.keras.layers.Dense(128, activation='relu'),
+                #tf.keras.layers.Flatten(batch_input_shape=input_shape),
+                tf.keras.layers.Dense(128, input_shape=input_shape, activation='relu'),
                 tf.keras.layers.Dense(64, activation='relu'),
+                tf.keras.layers.Dropout(0.25),
                 tf.keras.layers.Dense(output_shape, activation='linear'),  # output layer
             ])
 
@@ -39,12 +40,17 @@ class Agent:
 
     def act(self, state):
         #If network just started out, move randomly and see what works
-        if np.random.rand() <= self.exploreRate:
-            return random.randrange(self.output_shape)
-
+        '''if np.random.rand() <= self.exploreRate:
+            return random.randrange(self.output_shape)'''
+            
+        if type(state) is list:
+            state = np.array(state)
+        
+        print("State shape: ", state.shape)
+        print("Acting on state ", state)
         action_weights = self.model.predict(state)
-
-        return np.argmax(action_weights[0])
+        return action_weights
+        #return np.argmax(action_weights[0])
 
     #train network by replaying memory
     def replay(self, batch_size):
@@ -60,17 +66,17 @@ class Agent:
         if self.exploreRate > self.exploreMin:
             self.exploreRate *= self.exploreDecay
     
-    def save(filename):
-        model_json = model.to_json()
+    def save(self, filename):
+        model_json = self.model.to_json()
         with open("models/"+filename+".json", "w") as json_file:
             json_file.write(model_json)
         # serialize weights to HDF5
-        model.save_weights("models/"+filename+".h5")
+        self.model.save_weights("models/"+filename+".h5")
     
-    def load(filename):
+    def load(self, filename):
         json_file = open("models/"+filename+'.json', 'r')
-        model = tf.keras.models.model_from_json(json_file.read())
+        self.model = tf.keras.models.model_from_json(json_file.read())
         json_file.close()
-        model.load_weights("models/"+filename+".h5")
+        self.model.load_weights("models/"+filename+".h5")
         print("Loaded model from disk")
     

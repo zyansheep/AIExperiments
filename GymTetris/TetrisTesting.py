@@ -14,7 +14,7 @@ env = JoypadSpace(env, SIMPLE_MOVEMENT)
 #action size is NES simple input for tetris
 #state size is (240, 256, 3)
 num_actions = len(SIMPLE_MOVEMENT)
-state_size = (240, 256, 3)
+state_size = 214
 
 episode = 0
 running = True
@@ -50,6 +50,10 @@ def getState(board, curPiece, nextPiece):
     state.extend(board.flatten())
     return state
 
+def printBoard(board):
+    print('\n'.join([''.join(['{:4}'.format(item) for item in row]) 
+      for row in board]))
+
 skip = 1
 
 while running:
@@ -58,26 +62,16 @@ while running:
     done = False
     skip = 0
     frames = 0
-    
-    rawstate, reward, done, info = env.step(5)
+    env.reset();
     
     while not done:
         
-        if skip < 0:
-            userInput = input("Next?");
-            inputArr = userInput.split(' ')
-            if userInput == "stop": running = False
-            if userInput == "reset": state = env.reset()
-            if inputArr[0] == "skip": skip += int(inputArr[1])
-        else: skip -= 1;
-        
-        action = 5
-        rawstate, reward, done, info = env.step(action)
+        rawstate, reward, done, info = env.step(5)
         board = getBoard(rawstate)
         state = getState(board, info["current_piece"], info["next_piece"])
         
         print(info)
-        print(state)
+        print("State Len:",len(state))
         
         #network training here
         
@@ -87,6 +81,15 @@ while running:
         plt.show()'''
         
         env.render()
+        
+        if skip < 0:
+            userInput = input("Command>");
+            inputArr = userInput.split(' ')
+            if userInput == "stop": running = False
+            if userInput == "reset": state = env.reset()
+            if inputArr[0] == "skip": skip += int(inputArr[1])
+            if inputArr[0] == "printboard": printBoard(board)
+            if inputArr[0] == "help": print("stop, reset, skip, printboard, help")
+        else: skip -= 1;
     
-    pieceCount = info["statistics"].values(); #Update piececount
     print("Episode: " + str(episode))
