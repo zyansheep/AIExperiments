@@ -6,7 +6,7 @@
 [subrepo]
 	remote = https://github.com/zyansheep/python-CharacterRecognition
 	branch = master
-	commit = be7614fb551bd2cd51404333c289698f24e50f63
-	parent = 7f9f7cef90207d18011745e379b2478a8dbcaad2
+	commit = 90895ab100d5ea99afe3f3ae05e8a0a09765a520
+	parent = 31f1e23b115b6b5cfef6c17feb2ac913fb1e0660
 	method = merge
 	cmdver = 0.4.0
