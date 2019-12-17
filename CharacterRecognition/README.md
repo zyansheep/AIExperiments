@@ -7,3 +7,5 @@ python ImageRecognition.py
 ```
 
 press 'r' to reset the image
+
+Created with tensorflow/keras and pygame (so you might need those libraries to run it)
